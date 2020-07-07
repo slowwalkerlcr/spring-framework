@@ -514,11 +514,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	/**
 	 * Return the list of statically specified ApplicationListeners.
 	 */
-	//容器初始化的过程，读取Bean定义资源，并解析注册
 	public Collection<ApplicationListener<?>> getApplicationListeners() {
 		return this.applicationListeners;
 	}
-
+	//容器初始化的过程，读取Bean定义资源，并解析注册
 	@Override
 	public void refresh() throws BeansException, IllegalStateException {
 		//加一下锁，线程安全
@@ -659,6 +658,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * @see #getBeanFactory()
 	 */
 	protected ConfigurableListableBeanFactory obtainFreshBeanFactory() {
+		//这里使用了模版方法设计模式，父类定义了抽象的refreshBeanFactory()方法，具体实现调用子类容器的refreshBeanFactory()方法
+		//AbstractRefreshableApplicationContext.refreshBeanFactory() 具体实现
 		refreshBeanFactory();
 		return getBeanFactory();
 	}

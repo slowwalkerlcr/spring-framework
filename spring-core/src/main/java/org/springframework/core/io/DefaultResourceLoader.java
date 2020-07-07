@@ -141,6 +141,7 @@ public class DefaultResourceLoader implements ResourceLoader {
 
 
 	@Override
+	//根据路径获取Resource的具体实现方法
 	public Resource getResource(String location) {
 		Assert.notNull(location, "Location must not be null");
 
@@ -154,17 +155,21 @@ public class DefaultResourceLoader implements ResourceLoader {
 		if (location.startsWith("/")) {
 			return getResourceByPath(location);
 		}
+		//如果类路径方式("classpath:")，那么需要使用ClassPathResource来得到Bean文件的资源对象
 		else if (location.startsWith(CLASSPATH_URL_PREFIX)) {
 			return new ClassPathResource(location.substring(CLASSPATH_URL_PREFIX.length()), getClassLoader());
 		}
 		else {
 			try {
 				// Try to parse the location as a URL...
+				//如果是URL方式，使用URLResouce作为Bean文件的资源对象
 				URL url = new URL(location);
 				return (ResourceUtils.isFileURL(url) ? new FileUrlResource(url) : new UrlResource(url));
 			}
 			catch (MalformedURLException ex) {
 				// No URL -> resolve as resource path.
+				//如果既不是classpath:标识，又不是URL标识的Resource，则调用容器本身的getResourceByPath方法获取Resource
+				//org.springframework.context.support.FileSystemXmlApplicationContext.getResourceByPath
 				return getResourceByPath(location);
 			}
 		}

@@ -181,16 +181,20 @@ public abstract class AbstractBeanDefinitionReader implements BeanDefinitionRead
 
 
 	@Override
+	//循环去调用子类XmlBeanDefinitionReader的loadBeanDefinitions(Resource resource)方法
 	public int loadBeanDefinitions(Resource... resources) throws BeanDefinitionStoreException {
 		Assert.notNull(resources, "Resource array must not be null");
 		int count = 0;
 		for (Resource resource : resources) {
+			//XmlBeanDefinitionReader.loadBeanDefinitions(Resource resource)
 			count += loadBeanDefinitions(resource);
 		}
+		//返回解析资源的数量
 		return count;
 	}
 
 	@Override
+	//重载方法，调用下面的loadBeanDefinition(String,Set<Resource>)方法
 	public int loadBeanDefinitions(String location) throws BeanDefinitionStoreException {
 		return loadBeanDefinitions(location, null);
 	}
@@ -211,16 +215,21 @@ public abstract class AbstractBeanDefinitionReader implements BeanDefinitionRead
 	 * @see #loadBeanDefinitions(org.springframework.core.io.Resource[])
 	 */
 	public int loadBeanDefinitions(String location, @Nullable Set<Resource> actualResources) throws BeanDefinitionStoreException {
+		//获取在IOC容器初始化过程中设置过的资源加载器
 		ResourceLoader resourceLoader = getResourceLoader();
 		if (resourceLoader == null) {
 			throw new BeanDefinitionStoreException(
 					"Cannot load bean definitions from location [" + location + "]: no ResourceLoader available");
 		}
-
+		//TODO TODO重点标识一下 这里主要看else的逻辑
 		if (resourceLoader instanceof ResourcePatternResolver) {
 			// Resource pattern matching available.
 			try {
+				//将制定位置的Bean定义资源文件解析为Spring IOC容器封装的资源
+				//加载多个指定位置的Bean定义资源文件
+				//PathMatchingResourcePatternResolver.getResources
 				Resource[] resources = ((ResourcePatternResolver) resourceLoader).getResources(location);
+				//委派调用其子类XmlBeanDefinitionReader的方法，实现加载功能
 				int count = loadBeanDefinitions(resources);
 				if (actualResources != null) {
 					Collections.addAll(actualResources, resources);
@@ -237,7 +246,11 @@ public abstract class AbstractBeanDefinitionReader implements BeanDefinitionRead
 		}
 		else {
 			// Can only load single resources by absolute URL.
+			//将指定位置的Bean定义资源文件解析为Spring IOC容器封装的资源
+			//加载单个指定位置的BEan定义资源文件
+			//org.springframework.core.io.DefaultResourceLoader.getResource（）
 			Resource resource = resourceLoader.getResource(location);
+			//TODO 重点 模版方法模式 调用子类XmlBeanDefinitionReader的方法，实现加载功能
 			int count = loadBeanDefinitions(resource);
 			if (actualResources != null) {
 				actualResources.add(resource);
