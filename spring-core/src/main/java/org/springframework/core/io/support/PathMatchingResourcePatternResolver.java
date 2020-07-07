@@ -223,6 +223,7 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 	 */
 	public PathMatchingResourcePatternResolver(ResourceLoader resourceLoader) {
 		Assert.notNull(resourceLoader, "ResourceLoader must not be null");
+		//设置SPring的资源加载器   下次加载资源的时候就可以用到
 		this.resourceLoader = resourceLoader;
 	}
 
