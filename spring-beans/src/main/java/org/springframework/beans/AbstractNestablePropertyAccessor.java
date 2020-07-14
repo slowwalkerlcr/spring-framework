@@ -270,6 +270,7 @@ public abstract class AbstractNestablePropertyAccessor extends AbstractPropertyA
 		}
 	}
 
+	//实现属性依赖注入功能
 	protected void setPropertyValue(PropertyTokenHolder tokens, PropertyValue pv) throws BeansException {
 		if (tokens.keys != null) {
 			processKeyedProperty(tokens, pv);
@@ -289,15 +290,19 @@ public abstract class AbstractNestablePropertyAccessor extends AbstractPropertyA
 		}
 		Assert.state(tokens.keys != null, "No token keys");
 		String lastKey = tokens.keys[tokens.keys.length - 1];
-
+        //注入array类型的属性值
 		if (propValue.getClass().isArray()) {
+			//获取数组的类型
 			Class<?> requiredType = propValue.getClass().getComponentType();
+			//获取数组的长度
 			int arrayIndex = Integer.parseInt(lastKey);
 			Object oldValue = null;
 			try {
+				//获取数组以前初始化的值
 				if (isExtractOldValueForEditor() && arrayIndex < Array.getLength(propValue)) {
 					oldValue = Array.get(propValue, arrayIndex);
 				}
+				//将属性的值赋给数组中的元素
 				Object convertedValue = convertIfNecessary(tokens.canonicalName, oldValue, pv.getValue(),
 						requiredType, ph.nested(tokens.keys.length));
 				int length = Array.getLength(propValue);
@@ -315,7 +320,7 @@ public abstract class AbstractNestablePropertyAccessor extends AbstractPropertyA
 						"Invalid array index in property path '" + tokens.canonicalName + "'", ex);
 			}
 		}
-
+		//注入list类型的属性值
 		else if (propValue instanceof List) {
 			Class<?> requiredType = ph.getCollectionType(tokens.keys.length);
 			List<Object> list = (List<Object>) propValue;
@@ -351,7 +356,7 @@ public abstract class AbstractNestablePropertyAccessor extends AbstractPropertyA
 				}
 			}
 		}
-
+		//map
 		else if (propValue instanceof Map) {
 			Class<?> mapKeyType = ph.getMapKeyType(tokens.keys.length);
 			Class<?> mapValueType = ph.getMapValueType(tokens.keys.length);
