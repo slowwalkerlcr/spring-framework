@@ -295,6 +295,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T getBean(Class<T> requiredType, @Nullable Object... args) throws BeansException {
+		//org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveBean
 		Object resolved = resolveBean(ResolvableType.forRawClass(requiredType), args, false);
 		if (resolved == null) {
 			throw new NoSuchBeanDefinitionException(requiredType);
@@ -1095,6 +1096,8 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 		if (candidateNames.length == 1) {
 			String beanName = candidateNames[0];
+			//TODO org.springframework.beans.factory.support.AbstractBeanFactory.getBean()
+			//(T) getBean(beanName, clazz, args) 是一个T beanInstance
 			return new NamedBeanHolder<>(beanName, (T) getBean(beanName, clazz, args));
 		}
 		else if (candidateNames.length > 1) {
