@@ -482,27 +482,33 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	public void refresh() throws BeansException, IllegalStateException {
 		synchronized (this.startupShutdownMonitor) { // 加锁，避免 #refresh() 和 #close() 方法，自身或者对方并行执行。
 			// Prepare this context for refreshing.
-            // 准备刷新的上下文
+            // 调用容器准备刷新，获取容器的当前时间，同时给容器设置同步标识
 			prepareRefresh();
 
 			// Tell the subclass to refresh the internal bean factory.
             // 初始化 BeanFactory ，并进行 XML 文件读取
+			/// 告诉子类启动 refreshBeanFactory() 方法，BeanDefinition 资源文件的载入从子类的 refreshBeanFactory() 方法启动开始
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
-            // 对 BeanFactory 进行各种功能填充。
+            // 对 BeanFactory 进行各种功能填充。 为 BeanFactory 配置容器特性，例如类加载器、事件处理器等
             // TODO 包括对 @Autowired 和 @Qualifier 注解的属性注入
 			prepareBeanFactory(beanFactory);
 
 			try {
 				// Allows post-processing of the bean factory in context subclasses.
                 // 子类覆盖该方法，做 BeanFactory 的额外的处理
+				//为容器的某些子类指定特殊的 BeanPost 事件处理器
 				postProcessBeanFactory(beanFactory);
 				// Invoke factory processors registered as beans in the context.
                 // 激活各种 BeanFactory 处理器，例如 BeanFactoryPostProcessor
+				//调用所有注册的 BeanFactoryPostProcessor 的 Bean
 				invokeBeanFactoryPostProcessors(beanFactory);
 
 				// Register bean processors that intercept bean creation.
+				// 为 BeanFactory 注册 BeanPost 事件处理器.
+				// BeanPostProcessor 是 Bean 后置处理器，用于监听容器触发的事件
+
                 // 注册拦截 Bean 创建的 BeanPostProcessor。这里只是注册，真正的调用在 #getBean(...) 的时，即 Bean 创建的时候。
                 // 注意：
                 //      1. BeanFactoryPostProcessor 作用于 BeanDefinition
@@ -510,27 +516,30 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
                 registerBeanPostProcessors(beanFactory);
 
 				// Initialize message source for this context.
-                // TODO 芋艿，先暂时不看 为 Context 初始化 Message 源，即不同语言的消息体，国际化处理
+                // ，先暂时不看 为 Context 初始化 Message 源，即不同语言的消息体，国际化处理
 				initMessageSource();
 
 				// Initialize event multicaster for this context.
                 // 初始化 Application Event Multicaster
+				//// 初始化容器事件传播器
 				initApplicationEventMulticaster();
 
 				// Initialize other special beans in specific context subclasses.
-                // 留给子类，来初始化其他特殊的 Bean 对象们
+                // 留给子类，来初始化其他特殊的 Bean 对象们   springboot里就是在这里扩展实现嵌入tomcat等逻辑
 				onRefresh();
 
 				// Check for listener beans and register them.
                 // 注册监听器们
+				// 为事件传播器注册事件监听器.
 				registerListeners();
 
 				// Instantiate all remaining (non-lazy-init) singletons.
-                // TODO 初始化非延迟加载的单例
+				// 初始化 Bean，并对 lazy-init 属性进行处理
 				finishBeanFactoryInitialization(beanFactory);
 
 				// Last step: publish corresponding event.
                 // 完成 refresh 逻辑
+				// 初始化容器的生命周期事件处理器，并发布容器的生命周期事件
 				finishRefresh();
 			} catch (BeansException ex) {
 				if (logger.isWarnEnabled()) {
@@ -539,9 +548,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				}
 
 				// Destroy already created singletons to avoid dangling resources.
+				// 销毁以创建的单态 Bean
 				destroyBeans();
 
 				// Reset 'active' flag.
+				// 取消 refresh 操作，重置容器的同步标识.
 				cancelRefresh(ex);
 
 				// Propagate exception to caller.
@@ -605,9 +616,14 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * @see #refreshBeanFactory()
 	 * @see #getBeanFactory()
 	 */
+	// 告诉子类去刷新内部的 beanFactory
 	protected ConfigurableListableBeanFactory obtainFreshBeanFactory() {
 	    // 刷新( 重建 ) BeanFactory
+		// 自己定义了抽象的 refreshBeanFactory() 方法，具体实现交给了自己的子类
 		refreshBeanFactory();
+		// getBeanFactory() 也是一个抽象方法，交由子类实现
+		// 看到这里是不是很容易想起 “模板方法模式”，父类在模板方法中定义好流程，定义好抽象方法
+		// 具体实现交由子类完成
 		// 获得 BeanFactory
 		return getBeanFactory();
 	}
