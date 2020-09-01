@@ -849,8 +849,15 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		// Do not initialize FactoryBeans here: We need to leave all regular beans
 		// uninitialized to let post-processors apply to them!
         // 注册 ApplicationListener Bean 们，到 ApplicationEventMulticaster 中。
+		/**
+		 * 寻找类型为{@link ApplicationListener} 的beanName,目标文件为用户配置文件
+		 */
 		String[] listenerBeanNames = getBeanNamesForType(ApplicationListener.class, true, false);
 		for (String listenerBeanName : listenerBeanNames) {
+			/**
+			 * 1. 获取 {@link applicationEventMulticaster}
+			 * 2. 添加监听器名称
+			 */
 			getApplicationEventMulticaster().addApplicationListenerBean(listenerBeanName);
 		}
 
