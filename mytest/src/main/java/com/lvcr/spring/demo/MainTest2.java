@@ -10,7 +10,7 @@ public class MainTest2 {
 		//可以查看org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean()
 		MessageService messageService = applicationContext.getBean(MessageService.class, "messageService");
 		String message = messageService.getMessage();
-		System.out.println(message);
+		System.out.println("哈哈"+message);
 	}
 
 }
